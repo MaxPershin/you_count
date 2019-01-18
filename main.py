@@ -36,10 +36,14 @@ class ScreenManagerz(ScreenManager):
 	def __init__(self, *args, **kwargs):
 		super(ScreenManagerz, self).__init__()
 
+		self.sync()
+
+		self.buzz_sound = SoundLoader.load('buzz.wav')
+		self.level_up_sound = SoundLoader.load('lev.wav')
 		self.correct_sound = SoundLoader.load('correct.ogg')
 		self.wrong_sound = SoundLoader.load('wrong.ogg')
 		self.main_sound = SoundLoader.load('main.ogg')
-		self.main_sound.volume = 0.7
+		self.main_sound.volume = 0.3
 		self.main_sound.loop = True
 	
 	diff = ObjectProperty('baby')
@@ -72,7 +76,23 @@ class ScreenManagerz(ScreenManager):
 	level = ObjectProperty('0')
 
 	last_level = None
+	last_best = '0'
 
+
+	def sync(self):
+		try:
+			f = open("records.txt", "r+")
+			rawread = f.read()
+			f.close()
+			if len(rawread) == 0:
+				self.best_record = '0'
+				self.last_best = '0'
+			else:
+				self.best_record = rawread
+				self.last_best = rawread
+		except:
+			f = open("records.txt", "w+")
+			f.close()
 
 	def minus15getback(self, *args):
 		self.pos_minus15 = ({"center_x": -2,"center_y":.95})
@@ -182,6 +202,7 @@ class ScreenManagerz(ScreenManager):
 		Clock.schedule_once(self.return_level, 1)
 
 	def on_level(self, *args):
+		self.level_up_sound.play()
 		self.animation = Animation(pos_hint=({"center_x": .5,"center_y": .7}), duration=0.25)
 		self.animation.start(self.ids.level_verh)
 		Clock.schedule_once(self.go_away_level, 2)
@@ -199,7 +220,8 @@ class ScreenManagerz(ScreenManager):
 		if int(self.real_anwser) != int(self.anwser):
 			self.wrong_sound.play()
 			try:
-				self.time = str(int(self.time)-15)
+				self.time = str(int(self.time)-30)
+				self.ini_pb()
 			except:
 				return
 			self.anwser = ''
@@ -292,8 +314,10 @@ class ScreenManagerz(ScreenManager):
 	def input(self, what):
 		if what == 'CLS':
 			self.anwser = ''
-		elif what == '-':
+		elif what == '-' and '-' not in self.anwser:
 			self.anwser = '-' + self.anwser
+		elif what == '-' and '-' in self.anwser:
+			self.anwser = self.anwser[1:]
 		else:
 			self.anwser = self.anwser + what
 
@@ -316,11 +340,15 @@ class ScreenManagerz(ScreenManager):
 				self.time = str(time)
 				Clock.schedule_once(self.clock_down, 1)
 		else:
-			self.time = 'LOSER'
+			self.buzz_sound.play()
+			self.time = '0'
 			self.main_sound.stop()
 			Clock.schedule_once(self.reset, 2)
 
 	def reset(self, *args):
+		if int(self.best_record) > int(self.last_best):
+			self.last_best = self.best_record
+			save(int(self.best_record))
 		self.diff = 'baby'
 		self.time = '60'
 		self.example = ''
@@ -500,7 +528,7 @@ Builder.load_string("""
 
 			Label:
 				id: minus
-				text: '[color=ff3333]-15[/color]'
+				text: '[color=ff3333]-30[/color]'
 				halign: 'center'
 				valign: "middle"
 				text_size: self.size
@@ -610,7 +638,11 @@ Builder.load_string("""
 
 	""")
 
-
+def save(number):
+	print('I was initialized with {}'.format(number))
+	f = open("records.txt", "w+")
+	f.write(str(number))
+	f.close()
 
 if __name__ == "__main__":
 	YouCount().run()
