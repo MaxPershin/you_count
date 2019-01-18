@@ -71,6 +71,8 @@ class ScreenManagerz(ScreenManager):
 
 	level = ObjectProperty('0')
 
+	last_level = None
+
 
 	def minus15getback(self, *args):
 		self.pos_minus15 = ({"center_x": -2,"center_y":.95})
@@ -142,9 +144,14 @@ class ScreenManagerz(ScreenManager):
 			Clock.schedule_once(self.color_red_up, 0.0001)
 
 	def pb_up(self, *args):
-		self.pbvalue += 1
+		if int(self.time) > self.pbvalue:
+			self.pbvalue += 1
+		elif int(self.time) < self.pbvalue:
+			self.pbvalue -= 1
+		else:
+			return
 
-		if self.pbvalue == int(self.score):
+		if self.pbvalue == int(self.time):
 			return
 		else:
 			Clock.schedule_once(self.pb_up, 0.0001)
@@ -165,6 +172,19 @@ class ScreenManagerz(ScreenManager):
 
 		if self.pbvalue != int(self.score):
 			Clock.schedule_once(self.pb_up, 0.0001)
+
+	def return_level(self, *args):
+		self.ids.level_verh.pos_hint = ({"center_x": -1,"center_y": .7})
+
+	def go_away_level(self, *args):
+		self.animation = Animation(pos_hint=({"center_x": 2,"center_y": .7}), duration=0.25)
+		self.animation.start(self.ids.level_verh)
+		Clock.schedule_once(self.return_level, 1)
+
+	def on_level(self, *args):
+		self.animation = Animation(pos_hint=({"center_x": .5,"center_y": .7}), duration=0.25)
+		self.animation.start(self.ids.level_verh)
+		Clock.schedule_once(self.go_away_level, 2)
 
 	def color(self, on):
 		if on:
@@ -188,11 +208,12 @@ class ScreenManagerz(ScreenManager):
 		else:
 			self.correct_sound.play()
 			self.time = str(int(self.time)+25)
-			self.ini_pb(self)
 			if int(self.time) > int(self.score):
 				self.score = self.time
 			if int(self.score) > int(self.best_record):
 				self.best_record = self.score
+
+			self.ini_pb()
 
 			self.anwser = ''
 			self.color(False)
@@ -277,6 +298,7 @@ class ScreenManagerz(ScreenManager):
 			self.anwser = self.anwser + what
 
 	def clock_down(self, *args):
+		self.pb_up()
 		if int(self.time) > 0:
 			if self.started:
 
@@ -338,7 +360,7 @@ Builder.load_string("""
 		FloatLayout:
 			canvas:
 				Color: 
-					rgb: .9, .2, .2
+					rgb: 1, 1, 1
 				Rectangle:
 					source: 'back.png'
 					size: self.size
@@ -349,9 +371,9 @@ Builder.load_string("""
 				halign: 'center'
 				valign: "middle"
 				text_size: self.size
-				size_hint: ( 1, .15)
-				font_size: sp(60)
-				pos_hint:{"center_x": .5,"center_y":.92}
+				size_hint: ( .5, .75)
+				font_size: sp(40)
+				pos_hint:{"center_x": .5,"center_y":.95}
 
 			Label:
 				text: root.best_record
@@ -372,21 +394,12 @@ Builder.load_string("""
 				pos_hint:{"center_x": .2,"center_y":.6}
 
 			Button:
+				text: 'Начать'
 				pos_hint: {'center_x': .5, 'center_y': .2}
 				border: 0,0,0,0
-				size_hint: (.4, .15)
-				background_normal: 'geek.jpg'
+				size_hint: (.7, .15)
 				on_press: root.leggo()
 
-
-			Label:
-				text: 'ЖМИ НА БОТАНА ЧТОБЫ НАЧАТЬ'
-				halign: 'center'
-				valign: "middle"
-				text_size: self.size
-				size_hint: ( 1, .15)
-				font_size: sp(25)
-				pos_hint:{"center_x": .5,"center_y":.1}
 
 	Screen:
 		name: 'count'
@@ -395,7 +408,6 @@ Builder.load_string("""
 				Color: 
 					rgb: .2, .2, .2
 				Rectangle:
-					source: 'back.png'
 					size: self.size
 					pos: self.pos
 
@@ -404,7 +416,6 @@ Builder.load_string("""
 					Color: 
 						rgb: .7, .2, .2
 					Rectangle:
-						source: 'back.png'
 						size: self.size
 						pos: self.pos
 				font_size: sp(50)
@@ -433,7 +444,6 @@ Builder.load_string("""
 					Color: 
 						rgb: .4, .2, .5
 					Rectangle:
-						source: 'back.png'
 						size: self.size
 						pos: self.pos
 				text: root.anwser
@@ -521,6 +531,19 @@ Builder.load_string("""
 				value: root.pbvalue
 				size_hint: (.7, .05)
 				pos_hint:{"center_x": .5,"center_y":.7}
+
+			Label:
+				id: level_verh
+				canvas.before:
+					Color: 
+						rgb: .2, 1, .2
+					Rectangle:
+						size: self.size
+						pos: self.pos
+				text: 'LEVEL UP!!!'
+				size_hint: ( 1, .05)
+				font_size: sp(25)
+				pos_hint:{"center_x": -1,"center_y":.7}
 			
 
 			GridLayout:
