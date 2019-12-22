@@ -78,7 +78,6 @@ class ScreenManagerz(ScreenManager):
 	last_level = None
 	last_best = '0'
 
-
 	def sync(self):
 		try:
 			f = open("records.txt", "r+")
