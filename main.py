@@ -54,7 +54,7 @@ class ScreenManagerz(ScreenManager):
     example = ObjectProperty('')
     anwser = ObjectProperty('')
     started = True
-    minus_text = ObjectProperty('[color=ff3333]-30[/color]')
+    minus_text = ObjectProperty('[color=ff3333]-10[/color]')
 
     true_false = ObjectProperty((.2, .2, .2))
 
@@ -77,6 +77,12 @@ class ScreenManagerz(ScreenManager):
     pos_minus15 = ObjectProperty(({"center_x": -2, "center_y": .95}))
     score = ObjectProperty("0")
 
+    pos_heart_gray_one = ObjectProperty({"center_x": -2,"center_y":.9})
+    pos_heart_gray_two = ObjectProperty({"center_x": -2,"center_y":.9})
+    pos_heart_gray_three = ObjectProperty({"center_x": -2,"center_y":.9})
+    heart_counter = ObjectProperty(3)
+
+
     pbmax = ObjectProperty(0)
     pbvalue = ObjectProperty(0)
 
@@ -84,6 +90,24 @@ class ScreenManagerz(ScreenManager):
 
     last_level = None
     last_best = '0'
+
+    def on_heart_counter(self, *args):
+        if self.heart_counter == 3:
+            self.pos_heart_gray_one = {"center_x": -2,"center_y":.9}
+            self.pos_heart_gray_two = {"center_x": -2,"center_y":.9}
+            self.pos_heart_gray_three = {"center_x": -2,"center_y":.9}
+        elif self.heart_counter == 2:
+            self.pos_heart_gray_one = {"center_x": -2,"center_y":.9}
+            self.pos_heart_gray_two = {"center_x": -2,"center_y":.9}
+            self.pos_heart_gray_three = {"center_x": .6,"center_y":.9}
+        elif self.heart_counter == 1:
+            self.pos_heart_gray_one = {"center_x": -2,"center_y":.9}
+            self.pos_heart_gray_two = {"center_x": .5,"center_y":.9}
+            self.pos_heart_gray_three = {"center_x": .6,"center_y":.9}
+        elif self.heart_counter == 0:
+            self.pos_heart_gray_one = {"center_x": .4,"center_y":.9}
+            self.pos_heart_gray_two = {"center_x": .5,"center_y":.9}
+            self.pos_heart_gray_three = {"center_x": .6,"center_y":.9}
 
     def sync(self):
         try:
@@ -220,6 +244,26 @@ class ScreenManagerz(ScreenManager):
         else:
             Clock.schedule_once(self.color_green_up, 0.0001)
 
+    def pre_skip_question(self):
+        if self.heart_counter == 0:
+            return
+        else:
+            self.skip_question()
+
+    def skip_question(self):
+        try:
+            self.time = str(int(self.time) - 10)
+            self.heart_counter -= 1
+            self.ini_pb()
+        except:
+            return
+
+        self.anwser = ''
+        self.color(True)
+        self.minus15_ini(True)
+
+        return self.generate_question()
+
     def check_anwser(self):
         if self.anwser == '' or self.anwser == '-':
             return
@@ -227,7 +271,7 @@ class ScreenManagerz(ScreenManager):
         if int(self.real_anwser) != int(self.anwser):
             self.wrong_sound.play()
             try:
-                self.time = str(int(self.time) - 30)
+                self.time = str(int(self.time) - 10)
                 self.ini_pb()
             except:
                 return
@@ -306,7 +350,6 @@ class ScreenManagerz(ScreenManager):
             self.animation.start(self.ids.otvet)
 
             #give_up_button + skip_button
-
             self.animation = Animation(pos_hint=({"center_x": .3,"center_y":.485}), duration=0.25)
             self.animation.start(self.ids.skip)
 
@@ -320,7 +363,6 @@ class ScreenManagerz(ScreenManager):
             self.animation.start(self.ids.otvet)
 
             #give_up_button + skip_button hide
-
             self.animation = Animation(pos_hint=({'center_x': -2, 'center_y': .5}), duration=0.25)
             self.animation.start(self.ids.skip)
 
@@ -375,6 +417,7 @@ class ScreenManagerz(ScreenManager):
         self.started = True
 
         self.real_anwser = None
+        self.heart_counter = 3
 
         self.score = '0'
 

@@ -97,13 +97,13 @@ android.presplash_color = black
 #android.sdk = 20
 
 # (str) Android NDK version to use
-#android.ndk = 9c
+#android.ndk = r20b
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
 #android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-#android.ndk_path =
+android.ndk_path = /home/max/.buildozer/android/platform/android-ndk-r19c
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 #android.sdk_path =
