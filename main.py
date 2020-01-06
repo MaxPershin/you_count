@@ -1,3 +1,9 @@
+import requests
+from pusher import Pusher
+import pysher
+
+import json
+
 from kivy.config import Config
 
 Config.set('graphics', 'resizable', False)
@@ -24,6 +30,53 @@ from random import randint
 from kivy.core.audio import SoundLoader
 from kivy.uix.progressbar import ProgressBar
 
+class Engine():
+
+    def __init__(self, name, room):
+        
+        self.user = name
+        self.chatroom = room
+        self.get_keys()
+
+    def start_engine(self):
+        self.pusher = Pusher(app_id=self.PUSHER_APP_ID, key=self.PUSHER_APP_KEY, secret=self.PUSHER_APP_SECRET,
+                             cluster=self.PUSHER_APP_CLUSTER)
+        self.clientPusher = pysher.Pusher(self.PUSHER_APP_KEY, self.PUSHER_APP_CLUSTER)
+        self.clientPusher.connection.bind('pusher:connection_established', self.connectHandler)
+        self.clientPusher.connect()
+
+    def connectHandler(self, data):
+        self.channel = self.clientPusher.subscribe(self.chatroom)
+        self.channel.bind('newmessage', self.got_message)
+        # saying hi to chatroom
+        message = '$im_in$'
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+
+    def got_message(self, message):
+        message = json.loads(message)
+
+        print('you should revrite this method')
+
+    def send_message(self, message):
+        
+        try:
+            self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+            
+        except Exception as e:
+            print(e)
+            
+
+    def get_keys(self):
+        with open("auth_key.json", "r") as f:
+            keys = json.load(f)
+
+        self.auth_key = keys['auth_key']
+        self.url = keys['url']
+
+        self.PUSHER_APP_ID = keys['PUSHER_APP_ID']
+        self.PUSHER_APP_KEY = keys['PUSHER_APP_KEY']
+        self.PUSHER_APP_SECRET = keys['PUSHER_APP_SECRET']
+        self.PUSHER_APP_CLUSTER = keys['PUSHER_APP_CLUSTER']
 
 class YouCount(App):
     def build(self):
