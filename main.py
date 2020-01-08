@@ -129,6 +129,7 @@ class ScreenManagerz(ScreenManager):
     pos_plus25 = ObjectProperty(({"center_x": -2, "center_y": .95}))
     pos_minus15 = ObjectProperty(({"center_x": -2, "center_y": .95}))
     score = ObjectProperty("0")
+    score_copy = ObjectProperty("0")
 
     pos_heart_gray_one = ObjectProperty({"center_x": -2,"center_y":.9})
     pos_heart_gray_two = ObjectProperty({"center_x": -2,"center_y":.9})
@@ -143,6 +144,7 @@ class ScreenManagerz(ScreenManager):
 
     last_level = None
     last_best = '0'
+
 
     def on_heart_counter(self, *args):
         if self.heart_counter == 3:
@@ -457,7 +459,26 @@ class ScreenManagerz(ScreenManager):
             self.main_sound.stop()
             Clock.schedule_once(self.reset, 2)
 
+    def clean_end_pics(self):
+        self.ids.end_500.pos_hint = {"center_x": -5,"center_y":.6}
+        self.ids.end_400.pos_hint = {"center_x": -5,"center_y":.6}
+        self.ids.end_300.pos_hint = {"center_x": -5,"center_y":.6}
+        self.ids.end_200.pos_hint = {"center_x": -5,"center_y":.6}
+
+    def prepare_results(self):
+        if int(self.score_copy) >= 500:
+            self.ids.end_500.pos_hint = {"center_x": .5,"center_y":.6}
+        elif int(self.score_copy) >= 400:
+            self.ids.end_400.pos_hint = {"center_x": .5,"center_y":.6}
+        elif int(self.score_copy) >= 300:
+            self.ids.end_300.pos_hint = {"center_x": .5,"center_y":.6}
+        else:
+            self.ids.end_200.pos_hint = {"center_x": .5,"center_y":.6}
+
+        self.current = 'results'
+
     def reset(self, *args):
+        self.score_copy = self.score
         if int(self.best_record) > int(self.last_best):
             self.last_best = self.best_record
             save(int(self.best_record))
@@ -474,7 +495,7 @@ class ScreenManagerz(ScreenManager):
 
         self.score = '0'
 
-        self.current = 'menu'
+        self.prepare_results()
 
         self.move_gui(False)
 
@@ -490,7 +511,6 @@ class ScreenManagerz(ScreenManager):
 
 
 def save(number):
-    print('I was initialized with {}'.format(number))
     f = open("records.txt", "w+")
     f.write(str(number))
     f.close()

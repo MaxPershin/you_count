@@ -36,7 +36,7 @@ version = 2.2.1
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
-requirements = kivy
+requirements = kivy,openssl,android,requests,pusher,git+https://github.com/nlsdfnbch/Pysher.git,PyNaCl,websocket-client
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -85,7 +85,7 @@ fullscreen = 0
 android.presplash_color = black
 
 # (list) Permissions
-#android.permissions = INTERNET
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE
 
 # (int) Android API to use
 #android.api = 19
