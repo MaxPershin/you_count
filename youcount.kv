@@ -56,10 +56,11 @@
 				size_hint: (.7, .1)
 
 			Button:
-				text: 'Сад Дзен'
+				text: 'Рекорды'
 				pos_hint: {'center_x': .5, 'center_y': .16}
 				size_hint: (.7, .1)
-				on_press: root.current = 'results'
+				on_press: root.load_records()
+				on_press: root.current = 'records'
 				
 
 
@@ -367,25 +368,79 @@
 			font_size: sp(35)
 			text: 'Ваш результат: ' + root.score_copy
 			size_hint: ( 1, .15)
-			pos_hint:{"center_x": .5,"center_y":.25}
+			pos_hint:{"center_x": .5,"center_y":.3}
 
 		TextInput:
 			font_size: sp(25)
-			id: inputer
+			id: user_name
 			hint_text: 'Ваше имя'
 			multiline: False
 			size_hint: (.5, .05)
-			pos_hint: {'center_x': .5, 'center_y': .18}
+			pos_hint: {'center_x': .5, 'center_y': .23}
 
 		Button:
 			text: 'Сохранить результат в сети'
-			pos_hint: {'center_x': .5, 'center_y': .11}
+			pos_hint: {'center_x': .5, 'center_y': .14}
 			size_hint: (.7, .06)
-			on_press: root.current = 'results'
+			on_press: root.send_record()
 
 		Button:
 			text: 'Выйти'
-			pos_hint: {'center_x': .5, 'center_y': .05}
+			pos_hint: {'center_x': .5, 'center_y': .07}
 			size_hint: (.7, .06)
 			on_press: root.clean_end_pics()
+			on_press: root.current = 'menu'
+
+		Label:
+			id: saved_label
+			canvas.before:
+				Color: 
+					rgb: .2, 1, .2
+				Rectangle:
+					size: self.size
+					pos: self.pos
+			text: 'Ваш рекорд сохранен'
+			size_hint: ( 1, .05)
+			font_size: sp(25)
+			pos_hint:{"center_x": -5,"center_y":.23}
+
+		Label:
+			id: cant_save_label
+			canvas.before:
+				Color: 
+					rgb: 1, .2, .2
+				Rectangle:
+					size: self.size
+					pos: self.pos
+			text: 'Ваш рекорд недостоин'
+			size_hint: ( 1, .05)
+			font_size: sp(25)
+			pos_hint:{"center_x": -5,"center_y":.23}
+
+	Screen:
+		name: 'records'
+		FloatLayout:
+			canvas:
+				Rectangle:
+					source: "back_records.png"
+					size: self.size
+					pos: self.pos
+
+		Label:
+			font_size: sp(40)
+			text: 'Чемпионы'
+			size_hint: ( 1, .15)
+			pos_hint:{"center_x": .5,"center_y":.68}
+
+		Label:
+			font_size: sp(25)
+			text: root.champs
+			size_hint: ( 1, .15)
+			pos_hint:{"center_x": .5,"center_y":.4}
+
+		Button:
+			text: 'Выйти'
+			pos_hint: {'center_x': .5, 'center_y': .07}
+			size_hint: (.7, .06)
+			on_press: root.records_sound.stop()
 			on_press: root.current = 'menu'

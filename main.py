@@ -99,6 +99,7 @@ class ScreenManagerz(ScreenManager):
         self.correct_sound = SoundLoader.load('correct.ogg')
         self.wrong_sound = SoundLoader.load('wrong.ogg')
         self.main_sound = SoundLoader.load('main.ogg')
+        self.records_sound = SoundLoader.load('records.ogg')
         self.main_sound.volume = 0.3
         self.main_sound.loop = True
 
@@ -145,6 +146,43 @@ class ScreenManagerz(ScreenManager):
     last_level = None
     last_best = '0'
 
+    champs = ObjectProperty('None')
+
+    url = 'https://chatone-39de9.firebaseio.com/records.json'
+    auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
+
+    def load_records(self):
+        self.records_sound.play()
+        request = requests.get(self.url + "?auth=" + self.auth_key)
+        anwser = request.json()
+
+        dicti = {k: v for k, v in sorted(anwser.items(), reverse=True, key=lambda item: int(item[1]))}
+
+        sentence = ''
+        counter = 0
+
+        for each in dicti:
+            counter += 1
+            if counter > 10:
+                break
+            sentence += '{}. {} - {}\n'.format(counter, each, dicti[each])
+
+        self.champs = sentence
+
+    def send_record(self):
+
+        request = requests.get(self.url + "?auth=" + self.auth_key)
+        anwser = request.json()
+                        
+        min_num = min([int(anwser[each]) for each in anwser])
+
+        if int(self.score_copy) > min_num or len(anwser) < 10:
+            sent = '{' + '"{}"'.format(self.ids.user_name.text) + ': ' + '"{}"'.format(self.score_copy) + '}'
+            days_of_life = json.loads(sent)
+            requests.patch(url=self.url, json=days_of_life)
+            self.ids.saved_label.pos_hint = {"center_x": .5,"center_y":.23}
+        else:
+            self.ids.cant_save_label.pos_hint = {"center_x": .5,"center_y":.23}
 
     def on_heart_counter(self, *args):
         if self.heart_counter == 3:
@@ -464,6 +502,9 @@ class ScreenManagerz(ScreenManager):
         self.ids.end_400.pos_hint = {"center_x": -5,"center_y":.6}
         self.ids.end_300.pos_hint = {"center_x": -5,"center_y":.6}
         self.ids.end_200.pos_hint = {"center_x": -5,"center_y":.6}
+        self.ids.user_name.text = ''
+        self.ids.cant_save_label.pos_hint = {"center_x": -5,"center_y":.23}
+        self.ids.saved_label.pos_hint = {"center_x": -5,"center_y":.23}
 
     def prepare_results(self):
         if int(self.score_copy) >= 500:
