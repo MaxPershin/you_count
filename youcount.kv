@@ -54,6 +54,7 @@
 				text: 'Дуэль'
 				pos_hint: {'center_x': .5, 'center_y': .28}
 				size_hint: (.7, .1)
+				on_press: root.current = 'connect'
 
 			Button:
 				text: 'Рекорды'
@@ -443,4 +444,80 @@
 			pos_hint: {'center_x': .5, 'center_y': .07}
 			size_hint: (.7, .06)
 			on_press: root.records_sound.stop()
+			on_press: root.current = 'menu'
+
+	Screen:
+		name: 'connect'
+		FloatLayout:
+			canvas:
+				Color: 
+					rgb: .2, .2, .2
+				Rectangle:
+					size: self.size
+					pos: self.pos
+
+		Label:
+			font_size: sp(40)
+			text: 'Соединение'
+			size_hint: ( 1, .15)
+			pos_hint:{"center_x": .5,"center_y":.85}
+
+		TextInput:
+			font_size: sp(25)
+			id: internet_user_name
+			hint_text: 'Ваше имя'
+			multiline: False
+			size_hint: (.5, .05)
+			pos_hint: {'center_x': .5, 'center_y': .6}
+
+		ScrollView:
+			size_hint_x: .95
+			size_hint_y: .3
+			pos_hint: {'center_x': .5, 'center_y': .25}
+			GridLayout:
+				id: griddy
+				canvas:
+					Rectangle:
+						pos: self.pos
+						size: self.size
+						source: "src/img/cleanbl.png"
+				row_default_height: root.height/12 #row size control
+				spacing: 2
+				cols: 1
+				size_hint_y: None
+				height: 0
+
+		Button:
+			text: 'Найти соперника'
+			pos_hint: {'center_x': .5, 'center_y': .5}
+			size_hint: (.7, .06)
+			on_press: root.find_opponent()
+
+
+		Button:
+			text: 'Выйти'
+			pos_hint: {'center_x': .5, 'center_y': .07}
+			size_hint: (.7, .06)
+			on_press: root.current = 'menu'
+
+	Screen:
+		name: 'duel'
+		FloatLayout:
+			canvas:
+				Color: 
+					rgb: .2, .2, .2
+				Rectangle:
+					size: self.size
+					pos: self.pos
+
+		Label:
+			font_size: sp(40)
+			text: 'ДУЭЛЬ'
+			size_hint: ( 1, .15)
+			pos_hint:{"center_x": .5,"center_y":.85}
+
+		Button:
+			text: 'Выйти'
+			pos_hint: {'center_x': .5, 'center_y': .07}
+			size_hint: (.7, .06)
 			on_press: root.current = 'menu'

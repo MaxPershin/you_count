@@ -32,10 +32,11 @@ from kivy.uix.progressbar import ProgressBar
 
 class Engine():
 
-    def __init__(self, name, room):
-        
+    def __init__(self, name, room, cls):
+        self.cls = cls
         self.user = name
         self.chatroom = room
+        self.known_users = []
         self.get_keys()
 
     def start_engine(self):
@@ -45,6 +46,18 @@ class Engine():
         self.clientPusher.connection.bind('pusher:connection_established', self.connectHandler)
         self.clientPusher.connect()
 
+    def prepare_to_game(self):
+        print('READY TO PLAY', self.chatroom, self.known_users)
+
+    def agreed_handshake(self, by_who):
+        message = '$connect%{}$'.format(by_who)
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+        self.cls.start_popup.dismiss()
+        self.cls.connected(self.user, by_who)
+
+    def close_chatroom(self):
+        self.clientPusher.unsubscribe('search_room')
+
     def connectHandler(self, data):
         self.channel = self.clientPusher.subscribe(self.chatroom)
         self.channel.bind('newmessage', self.got_message)
@@ -52,10 +65,44 @@ class Engine():
         message = '$im_in$'
         self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
 
+    def call_player(self, button):
+        message = '$i_call%{}$'.format(button.text)
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+
+    def i_called(self, by_who):
+        self.cls.handshake_popup(by_who)
+
+    def check_if_service(self, message):
+        if message['user'] == self.user:
+            return True
+        else:
+            if message['message'] == '$im_in$' and message['user'] not in self.known_users:
+                self.known_users.append(message['user'])
+                other_user = message['user']
+                self.cls.ids.griddy.add_widget(Button(text=other_user, on_press=lambda x: self.call_player(x)))
+                message = '$im_in$'
+                self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+                return True
+
+            if message['message'] == '$im_in$' and message['user'] in self.known_users:
+                return True
+
+            if message['message'] == '$i_call%{}$'.format(self.user):
+                self.i_called(message['user'])
+                return True
+
+            if message['message'] == '$connect%{}$'.format(self.user):
+                self.cls.connected(self.user, message['user'])
+                return True
+
+
+        return False
+
     def got_message(self, message):
         message = json.loads(message)
 
-        print('you should revrite this method')
+        if not self.check_if_service(message):
+            print(message)
 
     def send_message(self, message):
         
@@ -150,6 +197,52 @@ class ScreenManagerz(ScreenManager):
 
     url = 'https://chatone-39de9.firebaseio.com/records.json'
     auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
+
+    def connected(self, user, opponent):
+        channel = '{}{}'.format(user, opponent)
+        self.c.close_chatroom()
+        self.c = Engine(user, channel, self)
+        self.c.start_engine()
+        self.current = 'duel'
+        self.c.prepare_to_game()
+
+    def dismiss_handshake_popup(self):
+        self.start_popup.dismiss()
+
+    def handshake_popup(self, by_who):
+        self.layout = FloatLayout(size=(self.width, self.height))
+        txt = 'Вас приглашает в игру {}'.format(by_who)
+        self.lbl = Label(text=txt, font_size="20sp",
+                         pos_hint={"center_x": .5, "center_y": .86})
+        self.button1 = Button(text='Нет', size_hint_y=None, size_hint_x=None,
+                              height=0.06 * self.height, width=0.5 * self.width, font_size="25sp",
+                              pos_hint={"center_x": .5, "center_y": .42}, halign='center',
+                              valign="middle", on_press=lambda x: self.dismiss_handshake_popup())
+        self.button2 = Button(text='Да', size_hint_y=None, size_hint_x=None,
+                              height=0.06 * self.height, width=0.5 * self.width, font_size="25sp",
+                              pos_hint={"center_x": .5, "center_y": .18}, halign='center',
+                              valign="middle", on_press=lambda x: self.c.agreed_handshake(by_who))
+
+        self.layout.add_widget(self.button1)
+        self.layout.add_widget(self.button2)
+        self.layout.add_widget(self.lbl)
+
+        self.start_popup = Popup(title='Manage Ean',
+                                      content=self.layout,
+                                      size_hint=(.8, .35))
+
+        self.start_popup.open()
+
+    def find_opponent(self):
+        self.c = Engine(self.ids.internet_user_name.text, 'search_room', self)
+        self.c.start_engine()
+
+
+    def popup(self, title, text):
+        popup = Popup(title=title,
+                      content=Label(text=text),
+                      size_hint=(0.65, 0.25))
+        popup.open()
 
     def load_records(self):
         self.records_sound.play()
