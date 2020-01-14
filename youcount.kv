@@ -54,7 +54,7 @@
 				text: 'Дуэль'
 				pos_hint: {'center_x': .5, 'center_y': .28}
 				size_hint: (.7, .1)
-				on_press: root.current = 'connect'
+				on_press: root.current = 'duel'
 
 			Button:
 				text: 'Рекорды'
@@ -510,14 +510,127 @@
 					size: self.size
 					pos: self.pos
 
-		Label:
-			font_size: sp(40)
-			text: 'ДУЭЛЬ'
-			size_hint: ( 1, .15)
-			pos_hint:{"center_x": .5,"center_y":.85}
+			Label:
+				canvas.before:
+					Color: 
+						rgb: .7, .2, .2
+					Rectangle:
+						size: self.size
+						pos: self.pos
+				font_size: sp(50)
+				text: root.example
+				size_hint: ( 1, .15)
+				pos_hint:{"center_x": .5,"center_y":.93}
+
+
+			Label:
+				canvas.before:
+					Color: 
+						rgb: .4, .2, .5
+					Rectangle:
+						size: self.size
+						pos: self.pos
+				text: root.anwser
+				size_hint: ( 1, .15)
+				font_size: sp(50)
+				pos_hint:{"center_x": .5,"center_y":.73}
+
+			ToggleButton:
+				allow_no_selection: False
+				group: 'shield_sword'
+				state: 'down'
+				background_normal: 'shield_button.png'
+				background_down: 'shield_button_on.png'
+				size_hint: (.40, .2)
+				pos_hint:{"center_x": .3,"center_y":.55}
+
+
+			ToggleButton:
+				allow_no_selection: False
+				group: 'shield_sword'
+				background_normal: 'sword_button.png'
+				background_down: 'sword_button_on.png'
+				size_hint: (.36, .2)
+				pos_hint:{"center_x": .7,"center_y":.55}
+
+
+			Button:
+				id: otvet
+				pos_hint: root.pos_otvet
+				text: 'Ответ'
+				size_hint: (.9, .09)
+
+			ProgressBar:
+				id: health
+				max: 100
+				value: 100
+				size_hint: (1, .1)
+				pos_hint:{"center_x": .5,"center_y":.83}
+			
+
+			GridLayout:
+				cols: 3
+				size_hint_y: .35
+				size_hint_x: .8
+				pos_hint: {'center_x': .5, 'center_y': .275}
+				canvas.before: 
+					Color: 
+						rgb: 0, .8, 0 
+					Rectangle: 
+						pos: self.pos 
+						size: self.size
+				Button:
+					text: "1"
+					font_size: sp(35)
+					on_press: root.input('1')
+
+				Button:
+					text: "2"
+					font_size: sp(35)
+					on_press: root.input('2')
+				Button:
+					text: "3"
+					font_size: sp(35)
+					on_press: root.input('3')
+				Button:
+					text: "4"
+					font_size: sp(35)
+					on_press: root.input('4')
+				Button:
+					text: "5"
+					font_size: sp(35)
+					on_press: root.input('5')
+				Button:
+					text: "6"
+					font_size: sp(35)
+					on_press: root.input('6')
+				Button:
+					text: "7"
+					font_size: sp(35)
+					on_press: root.input('7')
+				Button:
+					text: "8"
+					font_size: sp(35)
+					on_press: root.input('8')
+				Button:
+					text: "9"
+					font_size: sp(35)
+					on_press: root.input('9')
+				Button:
+					text: "CLS"
+					font_size: sp(35)
+					on_press: root.input('CLS')
+				Button:
+					text: "0"
+					font_size: sp(35)
+					on_press: root.input('0')
+				Button:
+					text: "-"
+					font_size: sp(35)
+					on_press: root.input('-')
 
 		Button:
-			text: 'Выйти'
-			pos_hint: {'center_x': .5, 'center_y': .07}
+			text: 'Готов'
+			pos_hint: {'center_x': .5, 'center_y': .05}
 			size_hint: (.7, .06)
-			on_press: root.current = 'menu'
+			on_press: root.got_hit(10)

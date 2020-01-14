@@ -198,6 +198,16 @@ class ScreenManagerz(ScreenManager):
     url = 'https://chatone-39de9.firebaseio.com/records.json'
     auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
 
+    def heal(self, amount):
+        self.ids.health.value += amount
+        if self.ids.health.value > 100:
+            self.ids.health.value = 100
+
+    def got_hit(self, amount):
+        self.ids.health.value -= amount
+        if self.ids.health.value <= 0:
+            print('DEAD')
+
     def connected(self, user, opponent):
         channel = '{}{}'.format(user, opponent)
         self.c.close_chatroom()
