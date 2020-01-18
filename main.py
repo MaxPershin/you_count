@@ -73,6 +73,9 @@ class Engine():
         self.cls.handshake_popup(by_who)
 
     def check_if_service(self, message):
+
+        print(message)
+
         if message['user'] == self.user:
             return True
         else:
@@ -95,8 +98,7 @@ class Engine():
                 self.cls.connected(self.user, message['user'])
                 return True
 
-
-        return False
+            return False
 
     def got_message(self, message):
         message = json.loads(message)
@@ -105,7 +107,7 @@ class Engine():
             print(message)
 
     def send_message(self, message):
-        
+        print('trying to send msg', message)
         try:
             self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
             
@@ -114,16 +116,22 @@ class Engine():
             
 
     def get_keys(self):
-        with open("auth_key.json", "r") as f:
-            keys = json.load(f)
+        #with open("auth_key.json", "r") as f:
+        #   keys = json.load(f)
 
-        self.auth_key = keys['auth_key']
-        self.url = keys['url']
+        #self.auth_key = keys['auth_key']
+        #self.url = keys['url']
 
-        self.PUSHER_APP_ID = keys['PUSHER_APP_ID']
-        self.PUSHER_APP_KEY = keys['PUSHER_APP_KEY']
-        self.PUSHER_APP_SECRET = keys['PUSHER_APP_SECRET']
-        self.PUSHER_APP_CLUSTER = keys['PUSHER_APP_CLUSTER']
+        #self.PUSHER_APP_ID = keys['PUSHER_APP_ID']
+        #self.PUSHER_APP_KEY = keys['PUSHER_APP_KEY']
+        #self.PUSHER_APP_SECRET = keys['PUSHER_APP_SECRET']
+        #self.PUSHER_APP_CLUSTER = keys['PUSHER_APP_CLUSTER']
+
+        self.PUSHER_APP_ID = '853308'
+        self.PUSHER_APP_KEY = "a7d3caa6f11e8e40b649"
+        self.PUSHER_APP_SECRET = "9618775036978ef089a7"
+        self.PUSHER_APP_CLUSTER = 'eu'
+
 
 class YouCount(App):
     def build(self):
@@ -197,6 +205,9 @@ class ScreenManagerz(ScreenManager):
 
     url = 'https://chatone-39de9.firebaseio.com/records.json'
     auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
+
+    def final_stage_ready(self):
+        self.c.send_message('test')
 
     def heal(self, amount):
         self.ids.health.value += amount
