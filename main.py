@@ -30,6 +30,17 @@ from random import randint
 from kivy.core.audio import SoundLoader
 from kivy.uix.progressbar import ProgressBar
 
+class NumberGenerator():
+
+    def __init__(self, seed_number):
+        import random as rand
+        self.rand = rand
+        self.rand.seed(seed_number)
+
+    def get_number(self):
+        print(self.rand.randint(1, 999))
+
+
 class Engine():
 
     def __init__(self, name, room, cls):
@@ -50,8 +61,10 @@ class Engine():
         print('READY TO PLAY', self.chatroom, self.known_users)
 
     def agreed_handshake(self, by_who):
+        self.seed_number = randint(0, 100000)
+        #send seed number!!!
         message = '$connect%{}$'.format(by_who)
-        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
         self.cls.start_popup.dismiss()
         self.cls.connected(self.user, by_who)
 
@@ -63,18 +76,19 @@ class Engine():
         self.channel.bind('newmessage', self.got_message)
         # saying hi to chatroom
         message = '$im_in$'
-        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
 
     def call_player(self, button):
         message = '$i_call%{}$'.format(button.text)
-        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
 
     def i_called(self, by_who):
         self.cls.handshake_popup(by_who)
 
     def check_if_service(self, message):
 
-        print(message)
+        if message['service'] == False:
+            return False
 
         if message['user'] == self.user:
             return True
@@ -84,7 +98,7 @@ class Engine():
                 other_user = message['user']
                 self.cls.ids.griddy.add_widget(Button(text=other_user, on_press=lambda x: self.call_player(x)))
                 message = '$im_in$'
-                self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+                self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
                 return True
 
             if message['message'] == '$im_in$' and message['user'] in self.known_users:
@@ -107,9 +121,9 @@ class Engine():
             print(message)
 
     def send_message(self, message):
-        print('trying to send msg', message)
+        
         try:
-            self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message})
+            self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': False})
             
         except Exception as e:
             print(e)
@@ -207,7 +221,8 @@ class ScreenManagerz(ScreenManager):
     auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
 
     def final_stage_ready(self):
-        self.c.send_message('test')
+        generator = NumberGenerator()
+        generator.get_number()
 
     def heal(self, amount):
         self.ids.health.value += amount
