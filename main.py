@@ -30,15 +30,77 @@ from random import randint
 from kivy.core.audio import SoundLoader
 from kivy.uix.progressbar import ProgressBar
 
+import certifi
+import os
+
+# Here's all the magic !
+os.environ['SSL_CERT_FILE'] = certifi.where()
+
+
 class NumberGenerator():
 
-    def __init__(self, seed_number):
+    def __init__(self, seed_number, internet_difficulty):
         import random as rand
         self.rand = rand
         self.rand.seed(seed_number)
+        self.internet_difficulty = internet_difficulty
 
-    def get_number(self):
-        print(self.rand.randint(1, 999))
+        self.symbols = ['-', '+', '*']
+
+    def get_example(self):
+        #action = self.symbols[self.rand.randint(0, 2)]
+        #first = self.rand.randint(-999, 999)
+        #second = self.rand.randint(-999, 999)
+        #this is how we managed to create pseudo-random number
+
+
+        if self.internet_difficulty == 'easy':
+            first = self.rand.randint(1, 99)
+            second = self.rand.randint(1, 99)
+            action = self.symbols[self.rand.randint(0, 1)]
+
+        elif self.internet_difficulty == 'ok':
+            action = self.symbols[self.rand.randint(0, 2)]
+
+            if action == '*':
+                first = self.rand.randint(1, 10)
+                second = self.rand.randint(1, 99)
+            else:
+                first = self.rand.randint(-99, 99)
+                second = self.rand.randint(-99, 99)
+
+        elif self.internet_difficulty == 'normal':
+            action = self.symbols[self.rand.randint(0, 2)]
+
+            if action == '*':
+                first = self.rand.randint(1, 99)
+                second = self.rand.randint(1, 99)
+            else:
+                first = self.rand.randint(-999, 999)
+                second = self.rand.randint(-999, 999)
+
+        elif self.internet_difficulty == 'hard':
+            first = self.rand.randint(1, 99)
+            second = self.rand.randint(1, 99)
+            action = '*'
+        elif self.internet_difficulty == 'legendary':
+            first = self.rand.randint(1, 999)
+            second = self.rand.randint(1, 999)
+            action = self.symbols[self.rand.randint(0, 2)]
+
+        if action == '-':
+            anwser = first - second
+        elif action == '+':
+            anwser = first + second
+        elif action == '*':
+            anwser = first * second
+        elif action == '/':
+            anwser = first / second
+
+        self.real_anwser = str(anwser)
+
+
+        return '{}{}{}'.format(first, action, second)
 
 
 class Engine():
@@ -61,8 +123,11 @@ class Engine():
         print('READY TO PLAY', self.chatroom, self.known_users)
 
     def agreed_handshake(self, by_who):
-        self.seed_number = randint(0, 100000)
-        #send seed number!!!
+        self.cls.seed_number = randint(0, 100000)
+
+        message = 'seed%{}'.format(self.cls.seed_number)
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
+
         message = '$connect%{}$'.format(by_who)
         self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
         self.cls.start_popup.dismiss()
@@ -112,22 +177,29 @@ class Engine():
                 self.cls.connected(self.user, message['user'])
                 return True
 
+            if message['message'].split('%')[0] == 'seed':
+                self.cls.seed_number = int(message['message'].split('%')[1])
+                return True
+
+            if message['message'].split('%')[0] == 'damage':
+                self.cls.got_hit(int(message['message'].split('%')[1]))
+
+            if message['message'] == 'win':
+                self.cls.current = 'win_screen'
+
             return False
 
     def got_message(self, message):
+        print('I, ', self.user, ' recieved a message ', message)
         message = json.loads(message)
 
         if not self.check_if_service(message):
             print(message)
 
     def send_message(self, message):
-        
-        try:
-            self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': False})
-            
-        except Exception as e:
-            print(e)
-            
+        print('I want to send a message')
+        self.pusher.trigger(self.chatroom, u'newmessage', {'user': self.user, 'message': message, 'service': True})
+        print('I did it!', self.user)
 
     def get_keys(self):
         #with open("auth_key.json", "r") as f:
@@ -215,14 +287,50 @@ class ScreenManagerz(ScreenManager):
     last_level = None
     last_best = '0'
 
+    shield = None
+
     champs = ObjectProperty('None')
 
     url = 'https://chatone-39de9.firebaseio.com/records.json'
     auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
 
+    def internet_check_anwser(self):
+        #change it so it will work with internet battle
+
+        if self.anwser == '' or self.anwser == '-':
+            return
+
+        if int(self.generator.real_anwser) != int(self.anwser):
+            self.wrong_sound.play()
+            self.anwser = ''
+        else:
+            self.anwser = ''
+
+            if self.shield:
+                self.heal(15)
+            else:
+                self.attack(15)
+
+            self.example = self.generator.get_example()
+            return 
+
+    def attack(self, value):
+        print('I DO AN ATTACK')
+        message = 'damage%{}'.format(value)
+        self.c.send_message(message)
+
     def final_stage_ready(self):
-        generator = NumberGenerator()
-        generator.get_number()
+
+        self.animation = Animation(pos_hint=({"center_x": -1, "center_y": .05}), duration=0.25)
+        self.animation.start(self.ids.internet_ready)
+        self.animation = Animation(pos_hint=({'center_x': .5, 'center_y': .05}), duration=0.25)
+        self.animation.start(self.ids.internet_otvet)
+
+        self.generator = NumberGenerator(self.seed_number, 'normal')
+        self.start_duel()
+
+    def start_duel(self):
+        self.example = self.generator.get_example()
 
     def heal(self, amount):
         self.ids.health.value += amount
@@ -232,10 +340,18 @@ class ScreenManagerz(ScreenManager):
     def got_hit(self, amount):
         self.ids.health.value -= amount
         if self.ids.health.value <= 0:
-            print('DEAD')
+            print('DEAD MAN')
+            self.stop_internet()
+
+    def stop_internet(self):
+        self.current = 'lose_screen'
+        message = 'win'
+        self.c.send_message(message)
 
     def connected(self, user, opponent):
-        channel = '{}{}'.format(user, opponent)
+        lister = sorted([user, opponent])
+
+        channel = '{}{}'.format(lister[0], lister[1])
         self.c.close_chatroom()
         self.c = Engine(user, channel, self)
         self.c.start_engine()

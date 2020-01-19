@@ -27,13 +27,13 @@
 				pos_hint:{"center_x": .2,"center_y":.54}
 
 			Label:
-				text: 'Alpha v1.2'
+				text: 'Alpha v2.0 - WildDog'
 				halign: 'center'
 				valign: "middle"
 				text_size: self.size
 				size_hint: ( 1, .15)
 				font_size: sp(15)
-				pos_hint:{"center_x": .1,"center_y":.02}
+				pos_hint:{"center_x": .2,"center_y":.02}
 
 			Label:
 				text: 'Лучший счет:'
@@ -543,6 +543,7 @@
 				background_down: 'shield_button_on.png'
 				size_hint: (.40, .2)
 				pos_hint:{"center_x": .3,"center_y":.55}
+				on_press: root.shield = True
 
 
 			ToggleButton:
@@ -552,13 +553,8 @@
 				background_down: 'sword_button_on.png'
 				size_hint: (.36, .2)
 				pos_hint:{"center_x": .7,"center_y":.55}
+				on_press: root.shield = False
 
-
-			Button:
-				id: otvet
-				pos_hint: root.pos_otvet
-				text: 'Ответ'
-				size_hint: (.9, .09)
 
 			ProgressBar:
 				id: health
@@ -630,7 +626,63 @@
 					on_press: root.input('-')
 
 		Button:
+			id: internet_ready
 			text: 'Готов'
 			pos_hint: {'center_x': .5, 'center_y': .05}
-			size_hint: (.7, .06)
+			size_hint: (.9, .09)
 			on_press: root.final_stage_ready()
+
+		Button:
+			id: internet_otvet
+			text: 'Ответ'
+			pos_hint: {'center_x': 2, 'center_y': .05}
+			size_hint: (.9, .09)
+			on_press: root.internet_check_anwser()
+
+
+	Screen:
+		name: 'lose_screen'
+		FloatLayout:
+			canvas:
+				Color: 
+					rgb: .2, .2, .2
+				Rectangle:
+					size: self.size
+					pos: self.pos
+
+		Label:
+			font_size: sp(40)
+			text: 'Вы проиграли :((('
+			size_hint: ( 1, .15)
+			pos_hint:{"center_x": .5,"center_y":.85}
+
+		Button:
+			text: 'Выйти'
+			pos_hint: {'center_x': .5, 'center_y': .07}
+			size_hint: (.7, .06)
+			on_press: root.clean_end_pics()
+			on_press: root.current = 'menu'
+
+
+	Screen:
+		name: 'win_screen'
+		FloatLayout:
+			canvas:
+				Color: 
+					rgb: .2, .2, .2
+				Rectangle:
+					size: self.size
+					pos: self.pos
+
+		Label:
+			font_size: sp(40)
+			text: 'Вы победили!'
+			size_hint: ( 1, .15)
+			pos_hint:{"center_x": .5,"center_y":.85}
+
+		Button:
+			text: 'Выйти'
+			pos_hint: {'center_x': .5, 'center_y': .07}
+			size_hint: (.7, .06)
+			on_press: root.clean_end_pics()
+			on_press: root.current = 'menu'
