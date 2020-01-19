@@ -243,6 +243,7 @@ class ScreenManagerz(ScreenManager):
         self.records_sound = SoundLoader.load('records.ogg')
         self.main_sound.volume = 0.3
         self.main_sound.loop = True
+        self.shield = True
 
     diff = ObjectProperty('baby')
     time = ObjectProperty('60')
@@ -287,12 +288,16 @@ class ScreenManagerz(ScreenManager):
     last_level = None
     last_best = '0'
 
-    shield = None
-
     champs = ObjectProperty('None')
 
     url = 'https://chatone-39de9.firebaseio.com/records.json'
     auth_key = '45uG9hhwkc6A5EQcyxtlxGMzWlHlbzZnopejiwxK'
+
+    def shield_change(self, value):
+        if value:
+            self.shield = True
+        else:
+            self.shield = False
 
     def internet_check_anwser(self):
         #change it so it will work with internet battle

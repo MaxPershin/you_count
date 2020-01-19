@@ -543,7 +543,7 @@
 				background_down: 'shield_button_on.png'
 				size_hint: (.40, .2)
 				pos_hint:{"center_x": .3,"center_y":.55}
-				on_press: root.shield = True
+				on_press: root.shield_change(True)
 
 
 			ToggleButton:
@@ -553,7 +553,7 @@
 				background_down: 'sword_button_on.png'
 				size_hint: (.36, .2)
 				pos_hint:{"center_x": .7,"center_y":.55}
-				on_press: root.shield = False
+				on_press: root.shield_change(False)
 
 
 			ProgressBar:
